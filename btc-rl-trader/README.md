@@ -115,19 +115,6 @@ pip install -r requirements.txt
 
 https://arxiv.org/abs/2406.08013
 
-## Project Structure
-
-```
-src/features.py      — all feature engineering (Higuchi FD, quantile rank, slope/curvature, order flow)
-src/env.py           — TradingEnv (gymnasium), observation and step logic
-src/policy.py        — CustomFeaturesExtractor and policy_kwargs
-src/utils.py         — data loading, metrics, plotting helpers
-config.py            — all hyperparameters in one place
-scripts/train.py     — training entry point
-scripts/evaluate.py  — walk-forward test evaluation
-tests/               — unit tests for features and environment
-```
-
 ---
 
 ## Dependencies
