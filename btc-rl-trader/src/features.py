@@ -151,11 +151,8 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
         df[col] = pd.to_numeric(df[col], errors='coerce')
 
     df['returns'] = ((df['close'] - df['close'].shift(1)) / df['close']).replace([np.inf, -np.inf], 0.0).fillna(0.0)
-    df['returns_5'] = (df['close'] - df['close'].shift(5)) / df['close']
-    df['returns_10'] = (df['close'] - df['close'].shift(10)) / df['close']
     df['returns_20'] = (df['close'] - df['close'].shift(20)) / df['close']
-    df['returns_d'] = df['close'] / df.groupby(df['Gmt time'].dt.floor('D'))['close'].transform('first') - 1
-
+    
     df['hfd_20'] = rolling_higuchi_fd(df['close'], window=20, kmax=10, min_periods=10)
     df['hfd_100'] = rolling_higuchi_fd(df['close'], window=100, kmax=10, min_periods=10)
 
@@ -163,28 +160,18 @@ def compute_features(df: pd.DataFrame) -> pd.DataFrame:
     df['vol_1000'] = (df['returns'] ** 2).rolling(window=1000).sum().pow(0.5)
 
     df['quant_100'] = rolling_quantile(df['close'], window=100, min_periods=10)
-    df['quant_200'] = rolling_quantile(df['close'], window=200, min_periods=10)
     df['quant_1000'] = rolling_quantile(df['close'], window=1000, min_periods=10)
 
     df['slope_20'] = rolling_trend_slope(df['close'], window=20)
-    df['slope_30'] = rolling_trend_slope(df['close'], window=30)
     df['slope_1000'] = rolling_trend_slope(df['close'], window=1000)
 
     df['curve_20'] = rolling_trend_curvature(df['close'], window=20)
-    df['curve_30'] = rolling_trend_curvature(df['close'], window=30)
     df['curve_1000'] = rolling_trend_curvature(df['close'], window=1000)
 
     df['time'] = (df['Gmt time'] - df['Gmt time'].dt.floor('D')).dt.total_seconds() / 3600.0
-    df['time'] = (df['time'] + 1) % 24
-
+    
     df['delta'] = 2 * df['taker_buy_volume'] - df['volume']
-    df['delta_10'] = df['delta'].rolling(window=10, min_periods=1).sum() / df['volume'].rolling(10).sum()
-    df['delta_30'] = df['delta'].rolling(window=30, min_periods=1).sum() / df['volume'].rolling(30).sum()
     df['delta_100'] = df['delta'].rolling(window=100, min_periods=1).sum() / df['volume'].rolling(100).sum()
-
-    s = df['delta']
-    df['delta'] = np.sign(s) * np.log1p(s.abs())
-    df['volume'] = np.log1p(df['volume'].clip(lower=0))
 
     df = df.fillna(0.0)
     return df
