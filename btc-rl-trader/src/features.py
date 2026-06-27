@@ -133,14 +133,14 @@ def rolling_trend_curvature(series: pd.Series, window: int) -> pd.Series:
 
 
 FEATURE_NAMES = [
-    'returns', 'returns_5', 'returns_10',
-    'returns_20', 'returns_d',
-    'delta', 'delta_10', 'delta_30',
-    'delta_100', 'volume', 'time',
-    'slope_20', 'slope_30', 'slope_1000',
-    'curve_20', 'curve_30', 'curve_1000',
-    'vol_20', 'vol_1000', 'hfd_20', 'hfd_100',
-    'quant_100', 'quant_200', 'quant_1000',
+    'returns', 'returns_20',
+    'delta', 'delta_100', 
+    'volume', 'time',
+    'slope_20', 'slope_1000', 
+    'curve_20', 'curve_1000',
+    'vol_20', 'vol_1000', 
+    'hfd_20', 'hfd_100',
+    'quant_100', 'quant_1000',
 ]
 
 
