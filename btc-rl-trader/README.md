@@ -19,11 +19,11 @@ Standard feedforward RL policies treat each timestep as independent, which fails
 To complement the discrete reward topology and prevent state-blind optimization, we append real-time positional features directly to the observation vector. This allows the network to dynamically track its inventory, open exposure metrics, and historical execution trajectories.
 
 ### Key Design Parameters:
-- **Higuchi Fractal Dimension:** Measures local price roughness to proxy shifting market regimes (trending vs. mean-reverting).
+- **Higuchi Fractal Dimension:** Measures local price roughness to model shifting market regimes (trending vs. mean-reverting).
 - **Rolling Quantile Rank:** Encodes where the current price sits in its historical distribution, normalized bounded to `[-1, 1]`.
 - **Order-Flow Imbalance:** Captures localized net aggressive volume delta to model immediate directional pressure.
-- **Trend Slope and Curvature:** Extracted via orthogonal polynomial regressions to isolate the first and second derivatives of price paths across multiple horizons.
-- **LSTM Hidden State:** Bypasses explicit manual regime labeling by allowing the network to continuously maintain a latent representation of market microstructure states.
+- **Trend Slope and Curvature:** Extracted via orthogonal polynomial regressions to derive the first and second derivatives of price paths across multiple horizons.
+- **LSTM Hidden State:** Allows the network to continuously maintain a latent representation of market microstructure states and regimes.
 
 ---
 
@@ -47,18 +47,6 @@ For each historical 1-hour bar, 24 raw features are computed and appended with 2
 | **Temporal Context** | `time` | Hour of day transformed into a cyclic sine/cosine mapping |
 | **Position Inventory** | `position` | Current agent state matrix: Long (`1`), Flat (`0`), Short (`-1`) |
 | **Unrealized Exposure** | `position_return` | Floating PnL of current open trade position |
-
-#### 1. Higuchi Fractal Dimension (HFD)
-Computed by treating the partial price time-series as a curve stretching across time scales $k = 1, \dots, k_{max}$. The normalized path length $L_m(k)$ is defined as:
-$$L_m(k) = \frac{1}{k} \left[ \left( \sum_{i=1}^{\lfloor \frac{N-m}{k} \rfloor} |X(m + ik) - X(m + (i-1)k)| \right) \frac{N-1}{\lfloor \frac{N-m}{k} \rfloor k} \right]$$
-The fractal dimension $D$ is extracted via the least-squares linear regression slope of $\ln \langle L(k) \rangle$ against $\ln(1/k)$.
-
-#### 2. Trend Curvature (Quadratic Polynomial Regression)
-Isolated by fitting a second-order polynomial model across an orthogonal rolling horizon matrix:
-$$y_t = \beta_0 + \beta_1 t + \beta_2 t^2 + \varepsilon_t$$
-Where $\beta_1$ characterizes structural momentum (velocity) and $\beta_2$ characterizes trend acceleration/deceleration (curvature).
-
----
 
 ### Policy Architecture
 
