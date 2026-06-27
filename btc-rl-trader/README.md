@@ -14,15 +14,15 @@ A **recurrent reinforcement learning** trading agent for BTC/USDT (1-hour bars),
 
 ## Motivation
 
-Standard feedforward RL policies treat each timestep as independent. Financial markets exhibit strong path-dependency: momentum, mean-reversion, and regime persistence all require the agent to integrate information over time. A recurrent policy with LSTM hidden state naturally captures this without manual feature engineering of lookback windows.
+Standard feedforward RL policies treat each timestep as independent. Financial markets exhibit strong path-dependency: momentum, mean-reversion, and regime persistence all require the agent to integrate information over time. A recurrent policy with LSTM hidden state naturally captures this without manual feature engineering of lookback windows. Additional positional features so that the network can track it's decisions and their results in real time with even a discrete reward policy. 
 
 Key design choices:
 
-- **Higuchi fractal dimension** measures local price roughness — a proxy for regime type (trending vs. noisy)
-- **Rolling quantile rank** encodes where the current price sits in its recent distribution, normalised to `[-1, 1]`
-- **Order-flow imbalance** (`2 * taker_buy_volume - volume`) proxies directional pressure; log-transformed to compress outliers
+- **Higuchi fractal dimension** measures local price roughness — for regime type modeling (trending vs. mean-reverting)
+- **Rolling quantile rank** encodes where the current price sits in it's recent distribution, normalised to `[-1, 1]`
+- **Order-flow imbalance** directional pressure modeling;
 - **Trend slope and curvature** from orthogonal polynomial regression capture first and second derivatives of price over multiple horizons
-- **LSTM hidden state** allows the policy to implicitly track regime without explicit regime labels
+- **LSTM hidden state** allows the policy to implicitly track regime and market microstructure
 
 ---
 
@@ -33,16 +33,15 @@ Key design choices:
 For each bar, 24 raw features are computed:
 
 | Feature | Description |
-|---|---|
-| `returns`, `returns_5/10/20` | Log price changes at multiple horizons |
+| `returns`, `returns_20` | Log price changes at multiple horizons |
 | `returns_d` | Intraday return since daily open |
 | `hfd_20`, `hfd_100` | Higuchi fractal dimension over 20 and 100 bars |
 | `vol_20`, `vol_1000` | Rolling realised volatility |
 | `quant_100/200/1000` | Rolling quantile rank, scaled to `[-1, 1]` |
-| `slope_20/30/1000` | OLS trend slope at three horizons |
-| `curve_20/30/1000` | Quadratic curvature (residual from linear trend) |
-| `delta`, `delta_10/30/100` | Order-flow imbalance at spot and rolling horizons |
-| `volume` | Log-transformed bar volume |
+| `slope_20/1000` | OLS trend slope at three horizons |
+| `curve_20/1000` | Quadratic curvature (residual from linear trend) |
+| `delta`, `delta_100` | Order-flow imbalance at spot and rolling horizons |
+| `volume` | volume |
 | `time` | Hour of day (cyclic, 0–23) |
 
 Two positional features are appended at inference time: current `position` (`{-1, 0, 1}`) and unrealised `position_return`.
@@ -50,19 +49,18 @@ Two positional features are appended at inference time: current `position` (`{-1
 ### Policy Architecture
 
 - **Features extractor**: linear projection from raw observation dim → 64
-- **LSTM**: 1 layer, hidden size 64, per-actor (critic has its own LSTM)
+- **LSTM**: 1 layer, hidden size 128, per-actor (critic has its own LSTM)
 - **Policy / value heads**: `[128, 128]` MLP each
 - **Optimiser**: Adam, `eps=1e-5`, linear LR schedule `3e-4 → 3e-5`
 
 ### Action Space
 
 | Action | Meaning |
-|---|---|
-| `0` | Flat (close any open position) |
-| `1` | Long |
-| `2` | Short |
+| `0` | Flat (close any open position/stay flat) |
+| `1` | Long/Hold(if already in a long position) |
+| `2` | Short/Hold(if already in a short position) |
 
-Transitions are immediate at the current bar's close price. Commission is set to zero by default (configurable in `config.py`).
+Limit orders are placed and 1 hour timeframe is used. Commission is set to standard binance limit orders 0.02% (configurable in `config.py`).
 
 ### Reward
 
@@ -93,17 +91,19 @@ python scripts/evaluate.py
 
 ---
 
-## Results
+## Results(For ease of understanding all the trades were placed with 1 btc over the entire 1 hour timeframe)
 
 | Metric | Value |
 |---|---|
-| Total trades (test) | — |
-| Trade win rate | — |
-| Mean trade profit | — |
-| Avg holding time (bars) | — |
-| Weekly P&L mean / std | — |
-
-> Fill in after running evaluation. Weekly P&L is expressed as a fraction of the week-start reference price.
+| Total trades (test) | — 1382 from December 2024 to present(27 july 2026)|
+| Agent Final P&L | — 247,967.70|
+| Buy-and-Hold P&L | — 10,305.30|
+| Max drawdown | — 18,860.00|
+| Sharpe ratio | — 4.44|
+| Trade win rate | — 58.76%|
+| Mean profit per trade | — 304.40|
+| Median profit per trade | — |
+'Image plot of the p&l'
 
 ---
 
@@ -119,7 +119,6 @@ scripts/train.py     — training entry point
 scripts/evaluate.py  — walk-forward test evaluation
 tests/               — unit tests for features and environment
 ```
-
 ---
 
 ## Dependencies
