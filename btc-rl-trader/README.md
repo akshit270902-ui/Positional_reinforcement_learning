@@ -16,7 +16,7 @@ A **recurrent reinforcement learning** trading agent for BTC/USDT (1-hour bars),
 
 Standard feedforward RL policies treat each timestep as independent, which fails to capture the strong path-dependencies inherent to financial markets (e.g., momentum, mean-reversion, and regime persistence). This system implements a recurrent policy with an LSTM hidden layer to integrate historical information over time implicitly. 
 
-To complement the discrete reward topology and prevent state-blind optimization, we append real-time positional features directly to the observation vector. This allows the network to dynamically track its inventory, open exposure metrics, and historical execution trajectories.
+To complement the discrete reward topology and prevent state-blind optimization, we append real-time positional features directly to the observation vector. This allows the network to dynamically track its inventory, and historical execution trajectories.
 
 ### Key Design Parameters:
 - **Higuchi Fractal Dimension:** Measures local price roughness to model shifting market regimes (trending vs. mean-reverting).
@@ -96,3 +96,48 @@ Where $\text{Side} \in \{-1, 1\}$ and $\mathcal{C}$ is the execution friction pe
 git clone [https://github.com/](https://github.com/)<your-handle>/btc-rl-trader.git
 cd btc-rl-trader
 pip install -r requirements.txt
+
+## Results(from December 2024 to present(27 july 2026))
+(All trades were placed using 1btc)
+
+| Metric | Value |
+|---|---|
+| Total trades | — 1226|
+| Total p&l | — 162,951.10|
+| Max Drawdown | — -18,860.00|
+| Buy-and-Hold P&L | — -38,688.30|
+| Trade win rate | — 58.48%|
+| Mean trade profit | — 262.60|
+
+---
+
+## Refrence used
+
+https://arxiv.org/abs/2406.08013
+
+## Project Structure
+
+```
+src/features.py      — all feature engineering (Higuchi FD, quantile rank, slope/curvature, order flow)
+src/env.py           — TradingEnv (gymnasium), observation and step logic
+src/policy.py        — CustomFeaturesExtractor and policy_kwargs
+src/utils.py         — data loading, metrics, plotting helpers
+config.py            — all hyperparameters in one place
+scripts/train.py     — training entry point
+scripts/evaluate.py  — walk-forward test evaluation
+tests/               — unit tests for features and environment
+```
+
+---
+
+## Dependencies
+
+See `requirements.txt`. Core: `stable-baselines3`, `sb3-contrib`, `gymnasium`, `torch`, `numba`, `pandas`, `numpy`, `matplotlib`.
+
+---
+
+## License
+
+MIT
+
+
