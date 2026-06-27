@@ -90,12 +90,7 @@ Where $\text{Side} \in \{-1, 1\}$ and $\mathcal{C}$ is the execution friction pe
 
 ---
 
-## Quickstart
-
-```bash
-git clone [https://github.com/](https://github.com/)<your-handle>/btc-rl-trader.git
-cd btc-rl-trader
-pip install -r requirements.txt
+## Performance
 
 ## Results(from December 2024 to present(27 july 2026))
 (All trades were placed using 1btc)
@@ -110,6 +105,9 @@ pip install -r requirements.txt
 | Mean trade profit | — 262.60|
 
 ---
+
+### Strategy Equity Curve
+![BTC Recurrent PPO Strategy Net P&L Cumulative Returns](btc-rl-trader/src/eval_pnl_latest.png)
 
 ## Refrence used
 
