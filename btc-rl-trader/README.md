@@ -107,7 +107,7 @@ Where $\text{Side} \in \{-1, 1\}$ and $\mathcal{C}$ is the execution friction pe
 ---
 
 ### Strategy Equity Curve
-![BTC Recurrent PPO Strategy Net P&L Cumulative Returns](btc-rl-trader/src/eval_pnl_latest.png)
+![BTC Recurrent PPO Strategy Net P&L Cumulative Returns](https://github.com/akshit270902-ui/Positional_reinforcement_learning/blob/d4e2013aa9521c0e094f3535f782d89c631ede5c/btc-rl-trader/src/eval_pnl_latest.png)
 
 ## Refrence used
 
